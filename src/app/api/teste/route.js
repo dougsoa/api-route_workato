@@ -6,6 +6,7 @@ export async function POST(request) {
     console.log("oi")
     return NextResponse.json({ message: "Recebido!", data: body }, { status: 200 });
   } catch (error) {
+    console.log(error)
     return NextResponse.json({ error: "Erro ao processar requisição" }, { status: 500 });
   }
 }

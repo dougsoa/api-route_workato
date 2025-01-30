@@ -21,6 +21,7 @@ export async function POST(request) {
       prazoEntrega: prazoEntrega
     });
   } catch (error) {
+    console.log(error)
     return NextResponse.json(
       { error: "Erro ao calcular o frete." },
       { status: 500 }
