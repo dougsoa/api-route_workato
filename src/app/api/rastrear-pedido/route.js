@@ -43,6 +43,7 @@ export async function POST(request) {
       eventos: rastreamento[codigoRastreamento].eventos
     });
   } catch (error) {
+    console.log(error)
     return NextResponse.json(
       { error: "Erro ao rastrear o pedido." },
       { status: 500 }
