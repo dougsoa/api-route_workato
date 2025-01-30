@@ -2,50 +2,56 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request) {
   try {
-    const { codigoRastreamento } = await request.json();
+    const { CEP, Produto_Solicitado } = await request.json();
 
-    if (!codigoRastreamento) {
+    if (!CEP) {
       return NextResponse.json(
-        { error: "Código de rastreamento não fornecido." },
+        { error: "CEP não fornecido." },
         { status: 400 }
       );
     }
 
-    // Simulação de dados de rastreamento
-    const rastreamento = {
-      "ABC123": {
-        status: "Em trânsito",
-        eventos: [
-          { data: "2025-01-30", evento: "Objeto postado no centro de distribuição." },
-          { data: "2025-02-01", evento: "Objeto saiu para entrega." },
-        ]
-      },
-      "XYZ456": {
-        status: "Entregue",
-        eventos: [
-          { data: "2025-01-28", evento: "Objeto postado no centro de distribuição." },
-          { data: "2025-01-29", evento: "Objeto entregue ao destinatário." },
-        ]
-      }
+    // Função para calcular prazo baseado no CEP
+    const calcularPrazoEntrega = (cep) => {
+      // Simulação de prazos por região do CEP
+      const primeirosDigitos = cep.substring(0, 2);
+      
+      // Prazos estimados por região
+      const prazos = {
+        '01': 3, // São Paulo capital
+        '02': 3,
+        '03': 3,
+        '04': 3,
+        '05': 3,
+        '06': 4, // Grande São Paulo
+        '07': 4,
+        '08': 4,
+        '11': 5, // Interior de SP
+        '12': 5,
+        '13': 5,
+        default: 7 // Outros estados
+      };
+
+      return prazos[primeirosDigitos] || prazos.default;
     };
 
-    // Verificar se o código de rastreamento existe
-    if (!rastreamento[codigoRastreamento]) {
-      return NextResponse.json(
-        { error: "Código de rastreamento não encontrado." },
-        { status: 404 }
-      );
-    }
+    const prazoEmDias = calcularPrazoEntrega(CEP);
+    const dataAtual = new Date();
+    const dataEstimada = new Date(dataAtual);
+    dataEstimada.setDate(dataEstimada.getDate() + prazoEmDias);
 
     return NextResponse.json({
-      codigoRastreamento,
-      status: rastreamento[codigoRastreamento].status,
-      eventos: rastreamento[codigoRastreamento].eventos
+      produto: Produto_Solicitado,
+      cep: CEP,
+      prazoEstimado: `${prazoEmDias} dias úteis`,
+      dataEstimadaEntrega: dataEstimada.toISOString().split('T')[0],
+      mensagem: `Seu ${Produto_Solicitado} será entregue em aproximadamente ${prazoEmDias} dias úteis.`
     });
+
   } catch (error) {
-    console.log(error)
+    console.log(error);
     return NextResponse.json(
-      { error: "Erro ao rastrear o pedido." },
+      { error: "Erro ao calcular o prazo de entrega." },
       { status: 500 }
     );
   }
